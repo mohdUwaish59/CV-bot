@@ -1,4 +1,4 @@
-# 📋 CV Tracker - Job Application Management System
+# 📋 CV-bot - Job Application Management System
 
 A modern, responsive web application for tracking job applications, managing CVs, and monitoring your job search progress. Built with Next.js, Firebase, and Tailwind CSS.
 
