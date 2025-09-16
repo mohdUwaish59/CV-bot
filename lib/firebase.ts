@@ -15,15 +15,12 @@ const firebaseConfig = {
 
 // Validate configuration
 const isConfigValid = () => {
-  console.log("[v0] Firebase config validation:", firebaseConfig)
   const isValid = Object.entries(firebaseConfig).every(([key, value]) => {
     const valid = value && value !== "undefined" && value.trim() !== ""
     if (!valid) {
-      console.log(`[v0] Invalid Firebase config for ${key}:`, value)
     }
     return valid
   })
-  console.log("[v0] Firebase config is valid:", isValid)
   return isValid
 }
 
@@ -37,12 +34,10 @@ let googleProvider: GoogleAuthProvider | null = null
 // Initialize Firebase app only when needed
 const getFirebaseApp = (): FirebaseApp | null => {
   if (typeof window === "undefined") {
-    console.log("[v0] Firebase app: Server-side rendering, returning null")
     return null
   }
 
   if (app) {
-    console.log("[v0] Firebase app: Using cached instance")
     return app
   }
 
@@ -52,16 +47,12 @@ const getFirebaseApp = (): FirebaseApp | null => {
   }
 
   try {
-    console.log("[v0] Firebase app: Initializing new instance")
     const existingApps = getApps()
-    console.log("[v0] Existing Firebase apps:", existingApps.length)
 
     if (existingApps.length === 0) {
       app = initializeApp(firebaseConfig)
-      console.log("[v0] Firebase app: Successfully initialized new app")
     } else {
       app = existingApps[0]
-      console.log("[v0] Firebase app: Using existing app")
     }
     return app
   } catch (error) {
@@ -73,25 +64,20 @@ const getFirebaseApp = (): FirebaseApp | null => {
 // Get Firebase Auth instance
 export const getFirebaseAuth = (): Auth | null => {
   if (typeof window === "undefined") {
-    console.log("[v0] Firebase auth: Server-side rendering, returning null")
     return null
   }
 
   if (auth) {
-    console.log("[v0] Firebase auth: Using cached instance")
     return auth
   }
 
   const firebaseApp = getFirebaseApp()
   if (!firebaseApp) {
-    console.log("[v0] Firebase auth: No app available")
     return null
   }
 
   try {
-    console.log("[v0] Firebase auth: Initializing auth service")
     auth = getAuth(firebaseApp)
-    console.log("[v0] Firebase auth: Successfully initialized")
     return auth
   } catch (error) {
     console.error("[v0] Firebase Auth initialization error:", error)
@@ -109,7 +95,6 @@ export const getFirebaseFirestore = (): Firestore | null => {
   if (!firebaseApp) return null
 
   try {
-    console.log("[v0] Firebase firestore: Initializing")
     db = getFirestore(firebaseApp)
     return db
   } catch (error) {
@@ -128,7 +113,6 @@ export const getFirebaseStorage = (): FirebaseStorage | null => {
   if (!firebaseApp) return null
 
   try {
-    console.log("[v0] Firebase storage: Initializing")
     storage = getStorage(firebaseApp)
     return storage
   } catch (error) {
@@ -144,7 +128,6 @@ export const getGoogleProvider = (): GoogleAuthProvider | null => {
   if (googleProvider) return googleProvider
 
   try {
-    console.log("[v0] Google provider: Initializing")
     googleProvider = new GoogleAuthProvider()
     googleProvider.setCustomParameters({
       prompt: "select_account",

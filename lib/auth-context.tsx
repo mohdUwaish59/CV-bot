@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("[v0] Auth provider: Attempting to initialize Firebase auth")
       const auth = getFirebaseAuth()
 
       if (!auth) {
@@ -45,17 +44,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return
       }
 
-      console.log("[v0] Auth provider: Firebase auth ready, setting up listener")
       setIsFirebaseReady(true)
 
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        console.log("[v0] Auth state changed:", user ? "User logged in" : "User logged out")
         setUser(user)
         setLoading(false)
       })
 
       return () => {
-        console.log("[v0] Auth provider: Cleaning up auth listener")
         unsubscribe()
       }
     }, 500)
