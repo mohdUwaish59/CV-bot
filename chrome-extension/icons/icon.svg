@@ -1,0 +1,17 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="#059669"/>
+  
+  <!-- Document icon -->
+  <path d="M74 21H42C38.6863 21 36 23.6863 36 27V101C36 104.314 38.6863 107 42 107H86C89.3137 107 92 104.314 92 101V39L74 21Z" fill="white"/>
+  <path d="M74 21V39H92" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Lines representing text -->
+  <line x1="48" y1="55" x2="80" y2="55" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="65" x2="80" y2="65" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="75" x2="70" y2="75" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Plus icon for "add" functionality -->
+  <circle cx="80" cy="80" r="16" fill="#10b981"/>
+  <path d="M76 80H84M80 76V84" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>
