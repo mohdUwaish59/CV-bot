@@ -1,7 +1,7 @@
 // Background script for CV Tracker extension
 class CVTrackerBackground {
   constructor() {
-    this.baseUrl = 'https://your-cv-tracker-domain.vercel.app'; // Replace with your actual domain
+    this.baseUrl = 'https://cv-bot-4-you.vercel.app/'; // Replace with your actual domain
     this.setupMessageListener();
   }
 
@@ -78,22 +78,33 @@ class CVTrackerBackground {
     try {
       // Open CV Tracker login page in a new tab
       const authTab = await chrome.tabs.create({
-        url: `${this.baseUrl}/auth/extension-login`,
+        url: `${this.baseUrl}auth/extension-login`,
         active: true
       });
 
       // Listen for the authentication completion
       return new Promise((resolve) => {
-        const authListener = (tabId, changeInfo, tab) => {
+        const authListener = (tabId, changeInfo) => {
           // Check if the auth tab completed authentication
           if (tabId === authTab.id && changeInfo.url && changeInfo.url.includes('extension-auth-success')) {
-            // Extract token from URL or use postMessage
+            // Extract auth data from URL
+            const url = new URL(changeInfo.url);
+            const token = url.searchParams.get('token');
+            const uid = url.searchParams.get('uid');
+            const email = url.searchParams.get('email');
+            const name = url.searchParams.get('name');
+            const error = url.searchParams.get('error');
+
             chrome.tabs.remove(tabId);
             chrome.tabs.onUpdated.removeListener(authListener);
             
-            // In a real implementation, you'd extract the token from the URL or use postMessage
-            // For now, we'll simulate successful authentication
-            this.handleAuthSuccess().then(resolve);
+            if (error) {
+              resolve({ success: false, error: 'Authentication failed' });
+            } else if (token && uid) {
+              this.handleAuthSuccess(token, uid, email, name).then(resolve);
+            } else {
+              resolve({ success: false, error: 'Missing authentication data' });
+            }
           }
         };
 
@@ -111,24 +122,27 @@ class CVTrackerBackground {
     }
   }
 
-  async handleAuthSuccess() {
-    // In a real implementation, you'd receive the auth token from the web app
-    // For now, we'll simulate this process
-    
-    // Store authentication data
-    await chrome.storage.local.set({
-      cvTrackerAuth: {
-        token: 'simulated-token', // This would be the real Firebase ID token
-        user: {
-          uid: 'user-id',
-          email: 'user@example.com',
-          displayName: 'User Name'
-        },
-        timestamp: Date.now()
-      }
-    });
+  async handleAuthSuccess(token, uid, email, name) {
+    try {
+      // Store real Firebase authentication data
+      await chrome.storage.local.set({
+        cvTrackerAuth: {
+          token: token, // Real Firebase ID token
+          user: {
+            uid: uid,
+            email: email,
+            displayName: name
+          },
+          timestamp: Date.now()
+        }
+      });
 
-    return { success: true };
+      console.log('Authentication successful, token stored');
+      return { success: true };
+    } catch (error) {
+      console.error('Error storing auth data:', error);
+      return { success: false, error: 'Failed to store authentication data' };
+    }
   }
 
   async saveApplication(applicationData) {

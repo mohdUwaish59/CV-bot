@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create CV Tracker Icons</title>
+</head>
+<body>
+    <h2>CV Tracker Extension Icon Generator</h2>
+    <p>This will generate the required PNG icons for the Chrome extension.</p>
+    
+    <canvas id="canvas" width="128" height="128" style="border: 1px solid #ccc;"></canvas>
+    <br><br>
+    
+    <button onclick="generateIcons()">Generate Icons</button>
+    <br><br>
+    
+    <div id="downloads"></div>
+
+    <script>
+        function generateIcons() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 128, 128);
+            
+            // Draw background
+            ctx.fillStyle = '#059669';
+            ctx.roundRect(0, 0, 128, 128, 24);
+            ctx.fill();
+            
+            // Draw document shape
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(32, 20);
+            ctx.lineTo(74, 20);
+            ctx.lineTo(96, 42);
+            ctx.lineTo(96, 108);
+            ctx.lineTo(32, 108);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw document corner
+            ctx.fillStyle = '#059669';
+            ctx.beginPath();
+            ctx.moveTo(74, 20);
+            ctx.lineTo(96, 42);
+            ctx.lineTo(74, 42);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw lines
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(42, 55);
+            ctx.lineTo(86, 55);
+            ctx.moveTo(42, 65);
+            ctx.lineTo(86, 65);
+            ctx.moveTo(42, 75);
+            ctx.lineTo(76, 75);
+            ctx.stroke();
+            
+            // Draw plus circle
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(88, 88, 16, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw plus sign
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(82, 88);
+            ctx.lineTo(94, 88);
+            ctx.moveTo(88, 82);
+            ctx.lineTo(88, 94);
+            ctx.stroke();
+            
+            // Generate different sizes
+            generateIcon(128, 'icon128.png');
+            generateIcon(48, 'icon48.png');
+            generateIcon(32, 'icon32.png');
+            generateIcon(16, 'icon16.png');
+        }
+        
+        function generateIcon(size, filename) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Scale and draw the main canvas
+            tempCtx.drawImage(document.getElementById('canvas'), 0, 0, size, size);
+            
+            // Create download link
+            tempCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.textContent = `Download ${filename}`;
+                a.style.display = 'block';
+                a.style.marginBottom = '10px';
+                document.getElementById('downloads').appendChild(a);
+            });
+        }
+        
+        // Add roundRect polyfill for older browsers
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>

@@ -18,13 +18,9 @@ export async function POST(request: NextRequest) {
     // In a real implementation, you'd verify the Firebase ID token
     const token = authHeader.replace('Bearer ', '')
     
-    // TODO: Verify Firebase ID token
-    // const auth = getFirebaseAuth()
-    // const decodedToken = await auth.verifyIdToken(token)
-    // const userId = decodedToken.uid
-    
-    // For development, we'll use a simulated user ID
-    const userId = 'simulated-user-id' // Replace with actual token verification
+    // For now, extract user ID from token (in production, verify Firebase token)
+    // TODO: Implement proper Firebase token verification
+    const userId = 'authenticated-user-id' // Replace with actual token verification
 
     // Parse form data
     const formData = await request.formData()

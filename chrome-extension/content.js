@@ -2,19 +2,42 @@
 class CVTrackerExtension {
   constructor() {
     this.isInjected = false;
+    this.jobDetails = null;
     this.init();
   }
 
   init() {
     // Check if we're on a LinkedIn job page
     if (this.isLinkedInJobPage()) {
-      this.injectCVTrackerButton();
+      // Wait for page to load completely
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => this.autoExtractAndInject(), 2000);
+        });
+      } else {
+        setTimeout(() => this.autoExtractAndInject(), 2000);
+      }
       this.setupObserver();
     }
   }
 
   isLinkedInJobPage() {
-    return window.location.href.includes('linkedin.com/jobs/');
+    return window.location.href.includes('linkedin.com/jobs/') && 
+           (window.location.href.includes('/view/') || window.location.href.includes('/collections/'));
+  }
+
+  async autoExtractAndInject() {
+    // Auto-extract job details when page loads
+    this.jobDetails = this.extractJobDetails();
+    console.log('Auto-extracted job details:', this.jobDetails);
+    
+    // Inject the button
+    this.injectCVTrackerButton();
+    
+    // If job details are available, show a notification
+    if (this.jobDetails && this.jobDetails.job_title && this.jobDetails.company_name) {
+      this.showAutoExtractNotification();
+    }
   }
 
   setupObserver() {
@@ -39,51 +62,83 @@ class CVTrackerExtension {
   }
 
   extractJobDetails() {
-    // Your tested script with improvements
+    // Using your exact tested script with additional selectors
     try {
-      // Get company name
-      const companyEl = document.querySelector('.job-details-jobs-unified-top-card__company-name a') ||
-                       document.querySelector('.jobs-unified-top-card__company-name a') ||
-                       document.querySelector('[data-test-id="job-details-company-name"]');
-      const company_name = companyEl ? companyEl.textContent.trim() : '';
-
-      // Get job title
-      const titleEl = document.querySelector('.job-details-jobs-unified-top-card__job-title h1') ||
-                     document.querySelector('.jobs-unified-top-card__job-title h1') ||
-                     document.querySelector('[data-test-id="job-details-job-title"]');
-      const job_title = titleEl ? titleEl.textContent.trim() : '';
-
-      // Get job description
-      const aboutContainer = document.querySelector('#job-details') ||
-                            document.querySelector('.jobs-description-content__text') ||
-                            document.querySelector('.jobs-box__html-content');
+      console.log('Extracting job details from LinkedIn page...');
       
-      let job_description = '';
+      // Get company name - using your exact script
+      const companyEl = document.querySelector('.job-details-jobs-unified-top-card__company-name a');
+      const company_name = companyEl ? companyEl.textContent.trim() : '';
+      console.log('Company found:', company_name);
+
+      // Get job title - using your exact script  
+      const titleEl = document.querySelector('.job-details-jobs-unified-top-card__job-title h1');
+      const job_title = titleEl ? titleEl.textContent.trim() : '';
+      console.log('Job title found:', job_title);
+
+      // Get "about the job" section - using your exact script
+      const aboutContainer = document.querySelector('#job-details');
+      let about_the_job = '';
       if (aboutContainer) {
-        job_description = aboutContainer.innerText
+        about_the_job = aboutContainer.innerText
           .replace(/\r/g, ' ')
           .replace(/\n{2,}/g, '\n')
           .split('\n')
           .map(s => s.trim())
           .filter(Boolean)
-          .join(' ')
-          .substring(0, 2000); // Limit length
+          .join(' ');
+      }
+      console.log('Job description length:', about_the_job.length);
+
+      // Additional selectors as fallbacks
+      let fallback_company = '';
+      let fallback_title = '';
+      let fallback_description = '';
+
+      if (!company_name) {
+        const fallbackCompanyEl = document.querySelector('.jobs-unified-top-card__company-name a') ||
+                                 document.querySelector('.job-details-jobs-unified-top-card__company-name') ||
+                                 document.querySelector('[data-test-id="job-details-company-name"]');
+        fallback_company = fallbackCompanyEl ? fallbackCompanyEl.textContent.trim() : '';
       }
 
-      // Get job location
-      const locationEl = document.querySelector('.job-details-jobs-unified-top-card__primary-description-container .tvm__text') ||
-                        document.querySelector('[data-test-id="job-details-location"]');
-      const location = locationEl ? locationEl.textContent.trim() : '';
+      if (!job_title) {
+        const fallbackTitleEl = document.querySelector('.jobs-unified-top-card__job-title h1') ||
+                               document.querySelector('.job-details-jobs-unified-top-card__job-title') ||
+                               document.querySelector('[data-test-id="job-details-job-title"]');
+        fallback_title = fallbackTitleEl ? fallbackTitleEl.textContent.trim() : '';
+      }
 
-      // Get job URL
-      const job_url = window.location.href;
+      if (!about_the_job) {
+        const fallbackDescEl = document.querySelector('.jobs-description-content__text') ||
+                              document.querySelector('.jobs-box__html-content') ||
+                              document.querySelector('.jobs-description');
+        if (fallbackDescEl) {
+          fallback_description = fallbackDescEl.innerText
+            .replace(/\r/g, ' ')
+            .replace(/\n{2,}/g, '\n')
+            .split('\n')
+            .map(s => s.trim())
+            .filter(Boolean)
+            .join(' ');
+        }
+      }
+
+      const finalCompany = company_name || fallback_company;
+      const finalTitle = job_title || fallback_title;
+      const finalDescription = about_the_job || fallback_description;
+
+      console.log('Final extraction results:', {
+        company_name: finalCompany,
+        job_title: finalTitle,
+        description_length: finalDescription.length
+      });
 
       return {
-        company_name,
-        job_title,
-        job_description,
-        location,
-        job_url,
+        company_name: finalCompany,
+        job_title: finalTitle,
+        job_description: finalDescription.substring(0, 2000), // Limit length
+        job_url: window.location.href,
         extracted_at: new Date().toISOString()
       };
     } catch (error) {
@@ -155,11 +210,16 @@ class CVTrackerExtension {
     button.disabled = true;
 
     try {
-      // Extract job details
-      const jobDetails = this.extractJobDetails();
+      // Use already extracted job details or extract fresh
+      let jobDetails = this.jobDetails;
+      if (!jobDetails) {
+        jobDetails = this.extractJobDetails();
+      }
+      
+      console.log('Job details for form:', jobDetails);
       
       if (!jobDetails || !jobDetails.job_title || !jobDetails.company_name) {
-        throw new Error('Could not extract job details. Please try again or add manually.');
+        throw new Error('Could not extract job details. Please refresh the page and try again.');
       }
 
       // Check authentication status
@@ -181,6 +241,15 @@ class CVTrackerExtension {
       // Restore button state
       button.innerHTML = originalText;
       button.disabled = false;
+    }
+  }
+
+  showAutoExtractNotification() {
+    if (this.jobDetails && this.jobDetails.job_title && this.jobDetails.company_name) {
+      this.showNotification(
+        `Job details detected: ${this.jobDetails.job_title} at ${this.jobDetails.company_name}. Click "Add to CV Tracker" to save!`,
+        'info'
+      );
     }
   }
 

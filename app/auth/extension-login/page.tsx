@@ -10,18 +10,30 @@ export default function ExtensionLoginPage() {
   const { user, signInWithGoogle, loading } = useAuth()
 
   useEffect(() => {
-    // If user is already authenticated, redirect to success page
+    // If user is already authenticated, get Firebase token and pass to extension
     if (user) {
-      // In a real implementation, you'd pass the auth token to the extension
-      // For now, we'll just redirect to indicate success
-      window.location.href = '/extension-auth-success'
+      handleAuthSuccess()
     }
   }, [user])
+
+  const handleAuthSuccess = async () => {
+    try {
+      // Get Firebase ID token
+      const token = await user.getIdToken()
+      
+      // Pass token to extension via URL parameters
+      const successUrl = `/extension-auth-success?token=${encodeURIComponent(token)}&uid=${encodeURIComponent(user.uid)}&email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(user.displayName || '')}`
+      window.location.href = successUrl
+    } catch (error) {
+      console.error('Error getting Firebase token:', error)
+      window.location.href = '/extension-auth-success?error=token_failed'
+    }
+  }
 
   const handleLogin = async () => {
     try {
       await signInWithGoogle()
-      // After successful login, the useEffect will handle the redirect
+      // After successful login, the useEffect will handle the redirect with token
     } catch (error) {
       console.error('Login failed:', error)
     }
