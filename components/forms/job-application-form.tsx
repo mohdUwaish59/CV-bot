@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -39,6 +39,35 @@ export function JobApplicationForm() {
     status: "applied" as ApplicationStatus,
     notes: "",
   })
+
+  // Check for URL parameters from extension
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const source = urlParams.get('source')
+    
+    if (source === 'extension') {
+      const company = urlParams.get('company')
+      const title = urlParams.get('title')
+      const description = urlParams.get('description')
+      const jobUrl = urlParams.get('url')
+      
+      if (company && title) {
+        setFormData(prev => ({
+          ...prev,
+          companyName: company,
+          jobTitle: title,
+          jobDescription: description || '',
+          notes: jobUrl ? `Applied via LinkedIn: ${jobUrl}` : ''
+        }))
+        
+        // Show success notification
+        toast({
+          title: "Job Details Imported!",
+          description: `Successfully imported "${title}" at ${company} from LinkedIn.`,
+        })
+      }
+    }
+  }, [])
   const [cvFile, setCvFile] = useState<File | null>(null)
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null)
 
